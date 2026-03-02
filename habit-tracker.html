@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hábit Tracker Ultra Pro - Domina Tu Vida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+        }
+        
+        .dark {
+            --glass-bg: rgba(30, 41, 59, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+        
+        .dark body {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e293b 100%);
+        }
+        
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .dark .glass-panel {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Social Share Cards */
+        .share-card {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .share-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .share-stat {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .mystery-blur {
+            filter: blur(4px);
+            user-select: none;
+            opacity: 0.7;
+        }
+        
+        /* Toggle Switch */
+        .theme-toggle {
+            width: 60px;
+            height: 30px;
+            background: #cbd5e1;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .dark .theme-toggle {
+            background: #475569;
+        }
+        
+        .theme-toggle::after {
+            content: '☀️';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .dark .theme-toggle::after {
+            content: '🌙';
+            left: 32px;
+            background: #1e293b;
+        }
+        
+        /* Calendar Integration Styles */
+        .calendar-sync-btn {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            transition: all 0.3s;
+        }
+        
+        .calendar-sync-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 133, 244, 0.4);
+        }
+        
+        .outlook-sync-btn {
+            background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+        }
+        
+        /* Habits Grid Dark Mode */
+        .dark .habit-checkbox {
+            border-color: #475569;
+            background: #334155;
+        }
+        
+        .dark .habit-checkbox:checked {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            border-color: #818cf8;
+        }
+        
+        .habit-checkbox {
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .habit-checkbox:checked {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+        
+        .habit-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .day-header {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            font-size: 0.7rem;
+            font-weight: 700;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        
+        /* Category Colors */
+        .category-health { --cat-color: #10b981; --cat-bg: #d1fae5; }
+        .category-productivity { --cat-color: #3b82f6; --cat-bg: #dbeafe; }
+        .category-mindfulness { --cat-color: #8b5cf6; --cat-bg: #ede9fe; }
+        .category-fitness { --cat-color: #f59e0b; --cat-bg: #fef3c7; }
+        .category-learning { --cat-color: #ec4899; --cat-bg: #fce7f3; }
+        .category-social { --cat-color: #06b6d4; --cat-bg: #cffafe; }
+        .category-creative { --cat-color: #f97316; --cat-bg: #ffedd5; }
+        .category-finance { --cat-color: #84cc16; --cat-bg: #ecfccb; }
+        
+        .dark .category-health { --cat-color: #34d399; --cat-bg: rgba(16, 185, 129, 0.2); }
+        .dark .category-productivity { --cat-color: #60a5fa; --cat-bg: rgba(59, 130, 246, 0.2); }
+        .dark .category-mindfulness { --cat-color: #a78bfa; --cat-bg: rgba(139, 92, 246, 0.2); }
+        .dark .category-fitness { --cat-color: #fbbf24; --cat-bg: rgba(245, 158, 11, 0.2); }
+        
+        .category-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .habit-row {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .habit-row:hover {
+            background-color: rgba(139, 92, 246, 0.05);
+            transform: translateX(4px);
+            border-left-color: var(--cat-color, #cbd5e1);
+        }
+        
+        .dark .habit-row:hover {
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Progress Ring */
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        /* Modal Animations */
+        .modal-enter {
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes modalPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Heatmap */
+        .heatmap-cell {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.5);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        
+        /* Floating Action Button */
+        .floating-action {
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .floating-action:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Share Modal Grid */
+        .share-template {
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+        
+        .share-template:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+        
+        .share-template.selected {
+            border-color: #764ba2;
+            box-shadow: 0 0 20px rgba(118, 75, 162, 0.5);
+        }
+        
+        /* Mystery Elements */
+        .teaser-element {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .teaser-element::after {
+            content: '?';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: rgba(255,255,255,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-6 pb-24 transition-colors duration-500">
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <div class="max-w-[1600px] mx-auto space-y-6">
+        <!-- Header Pro -->
+        <div class="glass-panel rounded-3xl p-6 shadow-2xl">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div class="flex items-center gap-5">
+                    <div class="relative group cursor-pointer" onclick="createConfetti()">
+                        <div class="w-20 h-20 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-800 rounded-2xl flex items-center justify-center text-white text-3xl shadow-2xl transform rotate-3 group-hover:rotate-6 transition-transform duration-300">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div id="userLevel" class="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                            NIVEL 1
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                            Hábit <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Ultra</span>
+                        </h1>
+                        <p class="text-[var(--text-secondary)] mt-1 flex items-center gap-2 flex-wrap">
+                            <span class="flex items-center gap-1"><i class="fas fa-fire text-orange-500 animate-pulse"></i> <span id="totalStreakDisplay">0 días</span></span>
+                            <span class="hidden sm:inline">•</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-star text-yellow-500"></i> <span id="xpDisplay">0 XP</span></span>
+                            <span class="hidden sm:inline">•</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-calendar-check text-green-500"></i> <span id="calendarSyncStatus">Sin sincronizar</span></span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4 bg-gray-100/50 dark:bg-slate-800/50 rounded-2xl p-2 backdrop-blur-sm">
+                    <button onclick="changeMonth(-1)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center text-[var(--text-primary)]">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="text-center px-8 min-w-[180px]">
+                        <div id="currentMonth" class="text-3xl font-bold text-[var(--text-primary)]"></div>
+                        <div id="currentYear" class="text-sm text-[var(--text-secondary)] font-semibold uppercase tracking-wider"></div>
+                    </div>
+                    <button onclick="changeMonth(1)" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center text-[var(--text-primary)]">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3 flex-wrap">
+                    <!-- Theme Toggle -->
+                    <div class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema"></div>
+                    
+                    <!-- Calendar Sync -->
+                    <button onclick="showCalendarModal()" class="px-4 py-3 bg-white dark:bg-slate-700 border-2 border-purple-100 dark:border-purple-900 text-purple-600 dark:text-purple-400 rounded-xl font-semibold hover:bg-purple-50 dark:hover:bg-slate-600 transition-all flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span class="hidden md:inline">Calendario</span>
+                    </button>
+                    
+                    <!-- Share Button -->
+                    <button onclick="showShareModal()" class="px-4 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2 animate-gradient">
+                        <i class="fas fa-share-alt"></i>
+                        <span class="hidden md:inline">Compartir</span>
+                    </button>
+                    
+                    <button onclick="addNewHabit()" class="floating-action px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold shadow-lg flex items-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Nuevo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Progress Card -->
+            <div class="glass-panel rounded-2xl p-5 relative overflow-hidden group hover:shadow-xl transition-all">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-[var(--text-secondary)] text-sm font-medium mb-1">Progreso Mensual</p>
+                        <h3 id="generalProgress" class="text-4xl font-bold text-[var(--text-primary)]">0%</h3>
+                    </div>
+                    <div class="relative w-16 h-16">
+                        <svg class="w-16 h-16 transform -rotate-90">
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="#e2e8f0" stroke-width="4" class="dark:stroke-slate-700"/>
+                            <circle id="progressCircle" cx="32" cy="32" r="28" fill="none" stroke="url(#gradient)" stroke-width="4" 
+                                    stroke-dasharray="175.9" stroke-dashoffset="175.9" stroke-linecap="round" class="progress-ring-circle"/>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#667eea" />
+                                    <stop offset="100%" style="stop-color:#764ba2" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <span id="trendIndicator" class="flex items-center gap-1 font-semibold text-gray-500">
+                        <i class="fas fa-minus"></i> 0%
+                    </span>
+                    <span class="text-[var(--text-secondary)]">vs mes anterior</span>
+                </div>
+            </div>
+
+            <!-- Consistency Card -->
+            <div class="glass-panel rounded-2xl p-5 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-orange-100 dark:border-orange-800">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-orange-600 dark:text-orange-400 text-sm font-medium mb-1">Consistencia</p>
+                        <h3 id="consistencyIndex" class="text-4xl font-bold text-[var(--text-primary)]">0%</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 text-xl">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex gap-1 h-8 items-end" id="consistencyBars"></div>
+            </div>
+
+            <!-- Dominant Habit -->
+            <div class="glass-panel rounded-2xl p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-blue-600 dark:text-blue-400 text-sm font-medium mb-1">Hábito Fuerte</p>
+                        <h3 id="dominantHabit" class="text-lg font-bold text-[var(--text-primary)] truncate">-</h3>
+                        <div class="flex items-center gap-2 mt-2">
+                            <div class="flex-1 bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                                <div id="dominantBar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="dominantPercent" class="text-sm font-bold text-blue-600 dark:text-blue-400">0%</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction -->
+            <div class="glass-panel rounded-2xl p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-green-600 dark:text-green-400 text-sm font-medium mb-1">Predicción</p>
+                        <h3 id="monthPrediction" class="text-4xl font-bold text-[var(--text-primary)]">0%</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 text-xl">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-[var(--text-secondary)] mt-2">Basado en últimos 7 días</p>
+            </div>
+        </div>
+
+        <!-- Charts & Heatmap -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="glass-panel rounded-2xl p-6 lg:col-span-2 shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-purple-600"></i>
+                        Análisis Detallado
+                    </h3>
+                    <select id="chartView" onchange="updateCharts()" class="px-3 py-1 rounded-lg border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500">
+                        <option value="category">Por Categoría</option>
+                        <option value="trend">Tendencia</option>
+                        <option value="comparison">Comparativa</option>
+                    </select>
+                </div>
+                <div class="relative h-72">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                    <i class="fas fa-fire-alt text-orange-500"></i>
+                    Mapa de Calor
+                </h3>
+                <div id="heatmapContainer" class="flex flex-wrap gap-1 justify-center"></div>
+                <div class="flex justify-between mt-3 text-xs text-[var(--text-secondary)]">
+                    <span>Menos</span>
+                    <div class="flex gap-1">
+                        <div class="w-3 h-3 bg-gray-100 dark:bg-slate-800 rounded"></div>
+                        <div class="w-3 h-3 bg-purple-300 dark:bg-purple-900 rounded"></div>
+                        <div class="w-3 h-3 bg-purple-500 rounded"></div>
+                        <div class="w-3 h-3 bg-purple-700 rounded"></div>
+                    </div>
+                    <span>Más</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habits Table -->
+        <div class="glass-panel rounded-2xl p-6 shadow-xl overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div class="flex items-center gap-4 flex-wrap">
+                    <h3 class="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                        <i class="fas fa-list-check text-purple-600"></i>
+                        Registro Diario
+                    </h3>
+                    <div class="flex gap-2 flex-wrap" id="categoryFilters">
+                        <button onclick="filterByCategory('all')" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 text-white transition-all hover:scale-105 ring-2 ring-offset-2 ring-purple-500">TODOS</button>
+                        <button onclick="filterByCategory('health')" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 transition-all hover:scale-105">SALUD</button>
+                        <button onclick="filterByCategory('productivity')" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 transition-all hover:scale-105">PRODUCT.</button>
+                        <button onclick="filterByCategory('fitness')" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 transition-all hover:scale-105">EJERCICIO</button>
+                        <button onclick="filterByCategory('mindfulness')" class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 transition-all hover:scale-105">MENTAL</button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="exportData()" class="px-4 py-2 bg-gray-100 dark:bg-slate-800 text-[var(--text-primary)] rounded-lg text-sm font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="importData()" class="px-4 py-2 bg-gray-100 dark:bg-slate-800 text-[var(--text-primary)] rounded-lg text-sm font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full" id="habitsTable">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200 dark:border-slate-700">
+                            <th class="text-left py-3 px-3 font-bold text-[var(--text-primary)] sticky left-0 bg-white/95 dark:bg-slate-900/95 min-w-[250px] z-10">Hábito</th>
+                            <th class="py-2 px-2 text-center w-16">
+                                <button onclick="toggleAllDays()" class="text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                                    <i class="fas fa-check-double text-lg"></i>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="habitsBody"></tbody>
+                </table>
+            </div>
+            
+            <div id="emptyState" class="hidden text-center py-16">
+                <div class="text-6xl mb-4 animate-bounce">🎯</div>
+                <h4 class="text-2xl font-bold text-[var(--text-primary)] mb-2">Comienza tu viaje</h4>
+                <p class="text-[var(--text-secondary)] mb-6 max-w-md mx-auto">Crea tu primer hábito y únete a miles de personas transformando sus vidas</p>
+                <button onclick="addNewHabit()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+                    Crear Primer Hábito
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Habit Modal -->
+    <div id="addHabitModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="glass-panel bg-white dark:bg-slate-800 rounded-3xl p-8 max-w-lg w-full mx-4 shadow-2xl modal-enter">
+            <h3 class="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600">
+                    <i class="fas fa-plus"></i>
+                </div>
+                Nuevo Hábito
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Nombre</label>
+                    <input type="text" id="newHabitInput" placeholder="Ej: Leer 30 minutos..." 
+                           class="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:border-purple-500 focus:outline-none transition-all text-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Categoría</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="selectCategory('health')" class="category-btn p-3 rounded-xl border-2 border-gray-200 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-center" data-cat="health">
+                            <i class="fas fa-heart text-emerald-500 text-xl mb-1 block"></i>
+                            <span class="text-xs font-medium text-[var(--text-primary)]">Salud</span>
+                        </button>
+                        <button onclick="selectCategory('productivity')" class="category-btn p-3 rounded-xl border-2 border-gray-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-center" data-cat="productivity">
+                            <i class="fas fa-briefcase text-blue-500 text-xl mb-1 block"></i>
+                            <span class="text-xs font-medium text-[var(--text-primary)]">Product.</span>
+                        </button>
+                        <button onclick="selectCategory('fitness')" class="category-btn p-3 rounded-xl border-2 border-gray-200 dark:border-slate-700 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all text-center" data-cat="fitness">
+                            <i class="fas fa-dumbbell text-amber-500 text-xl mb-1 block"></i>
+                            <span class="text-xs font-medium text-[var(--text-primary)]">Ejercicio</span>
+                        </button>
+                        <button onclick="selectCategory('mindfulness')" class="category-btn p-3 rounded-xl border-2 border-gray-200 dark:border-slate-700 hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-center" data-cat="mindfulness">
+                            <i class="fas fa-brain text-purple-500 text-xl mb-1 block"></i>
+                            <span class="text-xs font-medium text-[var(--text-primary)]">Mental</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Recordatorio</label>
+                        <input type="time" id="reminderTime" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:border-purple-500 focus:outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Sincronizar</label>
+                        <select id="calendarSelect" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:border-purple-500 focus:outline-none transition-all">
+                            <option value="">No sincronizar</option>
+                            <option value="google">Google Calendar</option>
+                            <option value="outlook">Outlook</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeModal()" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-slate-700 text-[var(--text-primary)] rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="saveNewHabit()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold hover:shadow-lg transition-all hover:scale-[1.02]">
+                    Crear Hábito
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Integration Modal -->
+    <div id="calendarModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="glass-panel bg-white dark:bg-slate-800 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl modal-enter">
+            <h3 class="text-2xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
+                <i class="fas fa-calendar-sync text-purple-600"></i>
+                Sincronizar Calendario
+            </h3>
+            <p class="text-[var(--text-secondary)] mb-6">Exporta tus hábitos a tu calendario favorito</p>
+            
+            <div class="space-y-4">
+                <button onclick="syncWithGoogle()" class="w-full p-4 rounded-2xl calendar-sync-btn text-white font-bold flex items-center gap-4 hover:scale-[1.02] transition-transform">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-lg">Google Calendar</div>
+                        <div class="text-sm opacity-90 font-normal">Sincronización bidireccional</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto"></i>
+                </button>
+                
+                <button onclick="syncWithOutlook()" class="w-full p-4 rounded-2xl outlook-sync-btn text-white font-bold flex items-center gap-4 hover:scale-[1.02] transition-transform">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
+                        <i class="fab fa-microsoft"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-lg">Outlook Calendar</div>
+                        <div class="text-sm opacity-90 font-normal">Microsoft 365 integration</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto"></i>
+                </button>
+                
+                <button onclick="exportToICS()" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 text-[var(--text-primary)] font-bold flex items-center gap-4 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+                    <div class="w-12 h-12 bg-gray-200 dark:bg-slate-600 rounded-xl flex items-center justify-center text-2xl">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-lg">Exportar .ICS</div>
+                        <div class="text-sm text-[var(--text-secondary)] font-normal">Archivo universal de calendario</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto"></i>
+                </button>
+            </div>
+            
+            <button onclick="closeCalendarModal()" class="w-full mt-6 px-4 py-3 border-2 border-gray-200 dark:border-slate-700 text-[var(--text-primary)] rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+    <!-- Share Modal with Viral Templates -->
+    <div id="shareModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 overflow-y-auto">
+        <div class="glass-panel bg-white dark:bg-slate-800 rounded-3xl p-8 max-w-4xl w-full mx-4 my-8 shadow-2xl modal-enter">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+                        <i class="fas fa-share-alt text-pink-500"></i>
+                        Compartir Progreso
+                    </h3>
+                    <p class="text-[var(--text-secondary)] mt-1">Genera tarjetas virales que generen curiosidad</p>
+                </div>
+                <button onclick="closeShareModal()" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-[var(--text-primary)] hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Template Selector -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="share-template selected p-4 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-500" onclick="selectShareTemplate('mystery')" data-template="mystery">
+                    <div class="text-3xl mb-2">🤫</div>
+                    <h4 class="font-bold text-[var(--text-primary)]">Misterio</h4>
+                    <p class="text-xs text-[var(--text-secondary)]">Oculta detalles, genera intriga</p>
+                </div>
+                
+                <div class="share-template p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30" onclick="selectShareTemplate('stats')" data-template="stats">
+                    <div class="text-3xl mb-2">📊</div>
+                    <h4 class="font-bold text-[var(--text-primary)]">Estadísticas</h4>
+                    <p class="text-xs text-[var(--text-secondary)]">Muestra números impresionantes</p>
+                </div>
+                
+                <div class="share-template p-4 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30" onclick="selectShareTemplate('challenge')" data-template="challenge">
+                    <div class="text-3xl mb-2">🔥</div>
+                    <h4 class="font-bold text-[var(--text-primary)]">Desafío</h4>
+                    <p class="text-xs text-[var(--text-secondary)]">Retea a tus amigos a superarte</p>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="mb-6">
+                <h4 class="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Vista Previa</h4>
+                <div id="sharePreview" class="flex justify-center">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- Share Buttons -->
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button onclick="downloadCard()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                    <i class="fas fa-download"></i>
+                    Descargar Imagen
+                </button>
+                <button onclick="shareToTwitter()" class="px-6 py-3 bg-[#1DA1F2] text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                    <i class="fab fa-twitter"></i>
+                    Twitter
+                </button>
+                <button onclick="shareToInstagram()" class="px-6 py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                    <i class="fab fa-instagram"></i>
+                    Instagram Story
+                </button>
+                <button onclick="shareToWhatsApp()" class="px-6 py-3 bg-[#25D366] text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp
+                </button>
+                <button onclick="copyShareText()" class="px-6 py-3 bg-gray-100 dark:bg-slate-700 text-[var(--text-primary)] rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-slate-600 transition-all flex items-center gap-2">
+                    <i class="fas fa-link"></i>
+                    Copiar Texto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Categories Config
+        const categories = {
+            health: { name: 'Salud', color: '#10b981', bg: '#d1fae5', icon: 'fa-heart', darkBg: 'rgba(16, 185, 129, 0.2)' },
+            productivity: { name: 'Productividad', color: '#3b82f6', bg: '#dbeafe', icon: 'fa-briefcase', darkBg: 'rgba(59, 130, 246, 0.2)' },
+            mindfulness: { name: 'Bienestar Mental', color: '#8b5cf6', bg: '#ede9fe', icon: 'fa-brain', darkBg: 'rgba(139, 92, 246, 0.2)' },
+            fitness: { name: 'Ejercicio', color: '#f59e0b', bg: '#fef3c7', icon: 'fa-dumbbell', darkBg: 'rgba(245, 158, 11, 0.2)' },
+            learning: { name: 'Aprendizaje', color: '#ec4899', bg: '#fce7f3', icon: 'fa-book', darkBg: 'rgba(236, 72, 153, 0.2)' },
+            social: { name: 'Social', color: '#06b6d4', bg: '#cffafe', icon: 'fa-users', darkBg: 'rgba(6, 182, 212, 0.2)' },
+            creative: { name: 'Creatividad', color: '#f97316', bg: '#ffedd5', icon: 'fa-palette', darkBg: 'rgba(249, 115, 22, 0.2)' },
+            finance: { name: 'Finanzas', color: '#84cc16', bg: '#ecfccb', icon: 'fa-coins', darkBg: 'rgba(132, 204, 22, 0.2)' }
+        };
+
+        let currentDate = new Date();
+        let habits = JSON.parse(localStorage.getItem('habitTrackerPro_data')) || [];
+        let selectedCategory = null;
+        let currentFilter = 'all';
+        let currentShareTemplate = 'mystery';
+        let mainChart = null;
+        let isDark = false;
+
+        // Check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            toggleTheme();
+        }
+
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.classList.toggle('dark');
+            
+            // Update chart colors if exists
+            if (mainChart) {
+                mainChart.options.scales.x.ticks.color = isDark ? '#94a3b8' : '#64748b';
+                mainChart.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#64748b';
+                mainChart.update();
+            }
+        }
+
+        // XP System
+        function calculateXP() {
+            let xp = 0;
+            habits.forEach(habit => {
+                Object.keys(habit.days || {}).forEach(dateKey => {
+                    if (habit.days[dateKey]) xp += 10;
+                });
+                // Streak bonus
+                const streak = calculateCurrentStreak(habit);
+                xp += streak * 5;
+            });
+            return xp;
+        }
+
+        function getLevel(xp) {
+            return Math.floor(xp / 500) + 1;
+        }
+
+        function calculateCurrentStreak(habit) {
+            let streak = 0;
+            const checkDate = new Date();
+            while (true) {
+                const dateKey = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`;
+                if (habit.days && habit.days[dateKey]) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else break;
+            }
+            return streak;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateDisplay();
+            renderTable();
+            updateStats();
+            initCharts();
+            generateHeatmap();
+            updateSharePreview();
+            
+            // Check reminders every minute
+            setInterval(checkReminders, 60000);
+            setInterval(saveData, 30000);
+        });
+
+        function updateDateDisplay() {
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('currentMonth').textContent = months[currentDate.getMonth()];
+            document.getElementById('currentYear').textContent = currentDate.getFullYear();
+        }
+
+        function getDaysInMonth() {
+            return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('habitsBody');
+            const thead = document.querySelector('#habitsTable thead tr');
+            const daysInMonth = getDaysInMonth();
+            
+            while (thead.children.length > 2) thead.removeChild(thead.lastChild);
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                const dayName = date.toLocaleDateString('es-ES', { weekday: 'narrow' });
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth();
+                
+                const th = document.createElement('th');
+                th.className = `py-2 px-1 min-w-[44px] ${isToday ? 'bg-purple-100 dark:bg-purple-900/30 rounded-t-lg' : ''}`;
+                th.innerHTML = `<div class="day-header ${isWeekend ? 'text-purple-600 dark:text-purple-400' : ''} ${isToday ? 'font-bold text-purple-800 dark:text-purple-300' : ''}">${day} ${dayName}</div>`;
+                thead.appendChild(th);
+            }
+            
+            tbody.innerHTML = '';
+            document.getElementById('emptyState').classList.toggle('hidden', habits.length > 0);
+            
+            const filtered = currentFilter === 'all' ? habits : habits.filter(h => h.category === currentFilter);
+            
+            filtered.forEach((habit, idx) => {
+                const realIdx = habits.indexOf(habit);
+                const cat = categories[habit.category] || categories.productivity;
+                const isDark = document.documentElement.classList.contains('dark');
+                
+                const row = document.createElement('tr');
+                row.className = `habit-row border-b border-gray-100 dark:border-slate-800 category-${habit.category}`;
+                row.style.setProperty('--cat-color', cat.color);
+                
+                row.innerHTML = `
+                    <td class="py-3 px-3 sticky left-0 bg-white/95 dark:bg-slate-900/95 z-10">
+                        <div class="flex items-center justify-between group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" 
+                                     style="background: ${isDark ? cat.darkBg : cat.bg}; color: ${cat.color}">
+                                    <i class="fas ${cat.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-[var(--text-primary)] text-sm">${habit.name}</div>
+                                    <span class="category-badge" style="background: ${isDark ? cat.darkBg : cat.bg}; color: ${cat.color}">${cat.name}</span>
+                                    ${habit.reminder ? `<span class="text-xs text-gray-400 ml-2"><i class="fas fa-clock"></i> ${habit.reminder}</span>` : ''}
+                                </div>
+                            </div>
+                            <button onclick="deleteHabit(${realIdx})" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-all p-2">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-2 px-2 text-center">
+                        <button onclick="completeAllDays(${realIdx})" class="text-gray-400 hover:text-purple-600 transition-all transform hover:scale-110">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </button>
+                    </td>
+                `;
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+                    const isChecked = habit.days && habit.days[dateKey];
+                    const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth();
+                    
+                    const cell = document.createElement('td');
+                    cell.className = `py-2 px-1 text-center ${isToday ? 'bg-purple-50 dark:bg-purple-900/10' : ''}`;
+                    cell.innerHTML = `
+                        <input type="checkbox" 
+                               class="habit-checkbox" 
+                               style="${isChecked ? `background: ${cat.color}; border-color: ${cat.color}` : ''}"
+                               ${isChecked ? 'checked' : ''} 
+                               onchange="toggleHabitDay(${realIdx}, ${day}, this)">
+                    `;
+                    row.appendChild(cell);
+                }
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleHabitDay(index, day, checkbox) {
+            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+            if (!habits[index].days) habits[index].days = {};
+            
+            if (checkbox.checked) {
+                habits[index].days[dateKey] = true;
+                checkAchievements(index);
+                
+                // Sync with calendar if configured
+                if (habits[index].calendar === 'google') {
+                    addToGoogleCalendar(habits[index], dateKey);
+                }
+            } else {
+                delete habits[index].days[dateKey];
+            }
+            
+            saveData();
+            updateStats();
+            updateCharts();
+            generateHeatmap();
+        }
+
+        function checkAchievements(index) {
+            const habit = habits[index];
+            const streak = calculateCurrentStreak(habit);
+            
+            if (streak === 7) showToast('🔥 ¡Racha de 7 días!', `En "${habit.name}"`);
+            if (streak === 30) {
+                showToast('🏆 ¡30 días!', `Eres imparable en "${habit.name}"`);
+                createConfetti();
+            }
+            
+            // Perfect day check
+            const today = new Date();
+            const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+            const allDone = habits.every(h => h.days && h.days[todayKey]);
+            
+            if (allDone) {
+                createConfetti();
+                showToast('✨ ¡Día Perfecto!', 'Todos los hábitos completados');
+            }
+        }
+
+        function updateStats() {
+            const daysInMonth = getDaysInMonth();
+            const xp = calculateXP();
+            const level = getLevel(xp);
+            
+            document.getElementById('xpDisplay').textContent = `${xp} XP`;
+            document.getElementById('userLevel').textContent = `NIVEL ${level}`;
+            
+            let totalChecks = 0;
+            let totalPossible = habits.length * daysInMonth;
+            
+            habits.forEach(h => {
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${d}`;
+                    if (h.days && h.days[key]) totalChecks++;
+                }
+            });
+            
+            const progress = totalPossible > 0 ? Math.round((totalChecks / totalPossible) * 100) : 0;
+            document.getElementById('generalProgress').textContent = progress + '%';
+            
+            // Update ring
+            const circle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 28;
+            circle.style.strokeDashoffset = circumference - (progress / 100) * circumference;
+            
+            // Other stats...
+            let bestHabit = null, bestRate = 0;
+            habits.forEach(h => {
+                let checks = 0;
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${d}`;
+                    if (h.days && h.days[key]) checks++;
+                }
+                const rate = (checks / daysInMonth) * 100;
+                if (rate > bestRate) {
+                    bestRate = rate;
+                    bestHabit = h;
+                }
+            });
+            
+            document.getElementById('dominantHabit').textContent = bestHabit ? bestHabit.name : '-';
+            document.getElementById('dominantPercent').textContent = Math.round(bestRate) + '%';
+            document.getElementById('dominantBar').style.width = bestRate + '%';
+            
+            // Streak
+            let globalStreak = 0;
+            const checkDate = new Date();
+            while (true) {
+                const key = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`;
+                if (habits.every(h => h.days && h.days[key]) && habits.length > 0) {
+                    globalStreak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else break;
+            }
+            document.getElementById('totalStreakDisplay').textContent = `${globalStreak} días`;
+        }
+
+        function generateHeatmap() {
+            const container = document.getElementById('heatmapContainer');
+            container.innerHTML = '';
+            
+            for (let i = 89; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+                
+                let intensity = 0;
+                habits.forEach(h => { if (h.days && h.days[key]) intensity++; });
+                
+                const max = habits.length || 1;
+                const level = intensity === 0 ? 0 : intensity < max * 0.3 ? 1 : intensity < max * 0.7 ? 2 : 3;
+                const colors = isDark ? 
+                    ['bg-slate-800', 'bg-purple-900/50', 'bg-purple-700', 'bg-purple-500'] :
+                    ['bg-gray-100', 'bg-purple-200', 'bg-purple-400', 'bg-purple-600'];
+                
+                const cell = document.createElement('div');
+                cell.className = `heatmap-cell ${colors[level]}`;
+                cell.title = `${date.toLocaleDateString()}: ${intensity}/${max}`;
+                container.appendChild(cell);
+            }
+        }
+
+        function initCharts() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            mainChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderRadius: 8 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', color: isDark ? '#94a3b8' : '#64748b' } },
+                        x: { ticks: { color: isDark ? '#94a3b8' : '#64748b' } }
+                    }
+                }
+            });
+            updateCharts();
+        }
+
+        function updateCharts() {
+            if (!mainChart) return;
+            const daysInMonth = getDaysInMonth();
+            const view = document.getElementById('chartView').value;
+            
+            if (view === 'category') {
+                const catData = {};
+                Object.keys(categories).forEach(c => catData[c] = { checks: 0, total: 0, color: categories[c].color });
+                
+                habits.forEach(h => {
+                    const cat = h.category || 'productivity';
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${d}`;
+                        catData[cat].total++;
+                        if (h.days && h.days[key]) catData[cat].checks++;
+                    }
+                });
+                
+                mainChart.data.labels = Object.entries(catData).filter(([_, d]) => d.total > 0).map(([c, _]) => categories[c].name);
+                mainChart.data.datasets[0].data = Object.entries(catData).filter(([_, d]) => d.total > 0).map(([_, d]) => Math.round((d.checks/d.total)*100));
+                mainChart.data.datasets[0].backgroundColor = Object.entries(catData).filter(([_, d]) => d.total > 0).map(([c, _]) => categories[c].color);
+            }
+            mainChart.update();
+        }
+
+        // Calendar Integration
+        function showCalendarModal() {
+            document.getElementById('calendarModal').classList.remove('hidden');
+            document.getElementById('calendarModal').classList.add('flex');
+        }
+
+        function closeCalendarModal() {
+            document.getElementById('calendarModal').classList.add('hidden');
+            document.getElementById('calendarModal').classList.remove('flex');
+        }
+
+        function syncWithGoogle() {
+            // Google Calendar API Integration
+            const clientId = 'YOUR_GOOGLE_CLIENT_ID'; // Replace with your OAuth2 client ID
+            const scope = 'https://www.googleapis.com/auth/calendar.events';
+            
+            // For demo, we'll generate ICS file compatible with Google
+            generateCalendarFile('google');
+            showToast('✅ Google Calendar', 'Archivo .ics generado. Ábrelo con Google Calendar.');
+            document.getElementById('calendarSyncStatus').textContent = 'Google ✓';
+            closeCalendarModal();
+        }
+
+        function syncWithOutlook() {
+            generateCalendarFile('outlook');
+            showToast('✅ Outlook', 'Archivo .ics generado para Outlook.');
+            document.getElementById('calendarSyncStatus').textContent = 'Outlook ✓';
+            closeCalendarModal();
+        }
+
+        function exportToICS() {
+            generateCalendarFile('generic');
+            showToast('📅 Exportado', 'Archivo de calendario descargado');
+            closeCalendarModal();
+        }
+
+        function generateCalendarFile(type) {
+            let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//HabitTracker//ES\n';
+            
+            habits.forEach(habit => {
+                if (!habit.days) return;
+                Object.keys(habit.days).forEach(dateKey => {
+                    if (habit.days[dateKey]) {
+                        const [year, month, day] = dateKey.split('-').map(Number);
+                        const date = new Date(year, month, day);
+                        const dateStr = date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                        
+                        icsContent += `BEGIN:VEVENT\n`;
+                        icsContent += `DTSTART:${dateStr}\n`;
+                        icsContent += `DTEND:${dateStr}\n`;
+                        icsContent += `SUMMARY:✓ ${habit.name}\n`;
+                        icsContent += `DESCRIPTION:Hábito completado en Hábit Tracker Ultra\n`;
+                        icsContent += `CATEGORIES:${categories[habit.category]?.name || 'Hábito'}\n`;
+                        icsContent += `STATUS:CONFIRMED\n`;
+                        icsContent += `END:VEVENT\n`;
+                    }
+                });
+            });
+            
+            icsContent += 'END:VCALENDAR';
+            
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `habitos-${new Date().toISOString().split('T')[0]}.ics`;
+            link.click();
+        }
+
+        function addToGoogleCalendar(habit, dateKey) {
+            // This would use Google Calendar API in production
+            console.log('Adding to Google Calendar:', habit.name, dateKey);
+        }
+
+        // Social Share System
+        function showShareModal() {
+            document.getElementById('shareModal').classList.remove('hidden');
+            document.getElementById('shareModal').classList.add('flex');
+            updateSharePreview();
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+            document.getElementById('shareModal').classList.remove('flex');
+        }
+
+        function selectShareTemplate(template) {
+            currentShareTemplate = template;
+            document.querySelectorAll('.share-template').forEach(el => el.classList.remove('selected', 'border-purple-500'));
+            document.querySelector(`[data-template="${template}"]`).classList.add('selected', 'border-purple-500');
+            updateSharePreview();
+        }
+
+        function updateSharePreview() {
+            const container = document.getElementById('sharePreview');
+            const xp = calculateXP();
+            const level = getLevel(xp);
+            const daysInMonth = getDaysInMonth();
+            
+            let totalChecks = 0;
+            habits.forEach(h => {
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${d}`;
+                    if (h.days && h.days[key]) totalChecks++;
+                }
+            });
+            
+            const progress = habits.length > 0 ? Math.round((totalChecks / (habits.length * daysInMonth)) * 100) : 0;
+            const streak = parseInt(document.getElementById('totalStreakDisplay').textContent) || 0;
+            
+            let html = '';
+            
+            if (currentShareTemplate === 'mystery') {
+                html = `
+                    <div id="captureCard" class="share-card w-80 h-96 rounded-3xl p-6 flex flex-col justify-between text-white shadow-2xl relative">
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                    <i class="fas fa-lock text-2xl"></i>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-3xl font-bold">NIVEL ${level}</div>
+                                    <div class="text-sm opacity-80">???</div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3 my-6">
+                                <div class="share-stat rounded-xl p-3 teaser-element">
+                                    <div class="text-xs opacity-70 uppercase tracking-wider">Progreso</div>
+                                    <div class="text-2xl font-bold mystery-blur">${progress}%</div>
+                                </div>
+                                <div class="share-stat rounded-xl p-3 teaser-element">
+                                    <div class="text-xs opacity-70 uppercase tracking-wider">Racha</div>
+                                    <div class="text-2xl font-bold mystery-blur">${streak} días</div>
+                                </div>
+                                <div class="share-stat rounded-xl p-3 teaser-element">
+                                    <div class="text-xs opacity-70 uppercase tracking-wider">Hábitos</div>
+                                    <div class="text-2xl font-bold mystery-blur">${habits.length} activos</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="relative z-10 text-center">
+                            <p class="text-sm font-medium mb-2">"Algunos hábitos cambian vidas...</p>
+                            <p class="text-xs opacity-80">¿Quieres saber cuáles son los míos?"</p>
+                            <div class="mt-4 text-xs opacity-60">🔗 Link en bio</div>
+                        </div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    </div>
+                `;
+            } else if (currentShareTemplate === 'stats') {
+                const bestHabit = habits.length > 0 ? habits.reduce((a, b) => {
+                    const aChecks = Object.keys(a.days || {}).length;
+                    const bChecks = Object.keys(b.days || {}).length;
+                    return aChecks > bChecks ? a : b;
+                }) : { name: 'Ninguno' };
+                
+                html = `
+                    <div id="captureCard" class="share-card w-80 h-96 rounded-3xl p-6 flex flex-col justify-between text-white shadow-2xl relative" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+                        <div class="relative z-10">
+                            <div class="text-center mb-6">
+                                <div class="inline-block px-4 py-1 bg-white/20 rounded-full text-sm font-bold mb-2">ESTADÍSTICAS</div>
+                                <h3 class="text-2xl font-bold">Mi Progreso</h3>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="share-stat rounded-2xl p-4 text-center">
+                                    <div class="text-3xl font-bold text-yellow-300">${progress}%</div>
+                                    <div class="text-xs opacity-80 mt-1">Eficiencia</div>
+                                </div>
+                                <div class="share-stat rounded-2xl p-4 text-center">
+                                    <div class="text-3xl font-bold text-orange-300">${streak}</div>
+                                    <div class="text-xs opacity-80 mt-1">Días 🔥</div>
+                                </div>
+                                <div class="share-stat rounded-2xl p-4 text-center col-span-2">
+                                    <div class="text-lg font-bold text-emerald-300 truncate">${bestHabit.name}</div>
+                                    <div class="text-xs opacity-80 mt-1">Hábito Top</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="relative z-10 text-center">
+                            <div class="text-4xl mb-2">📊</div>
+                            <p class="text-sm font-bold">"La disciplina vence al talento"</p>
+                            <div class="mt-3 flex justify-center gap-2">
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-xs">#Hábitos</span>
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-xs">#Productividad</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentShareTemplate === 'challenge') {
+                html = `
+                    <div id="captureCard" class="share-card w-80 h-96 rounded-3xl p-6 flex flex-col justify-between text-white shadow-2xl relative" style="background: linear-gradient(135deg, #dc2626 0%, #ea580c 50%, #f59e0b 100%);">
+                        <div class="relative z-10 text-center">
+                            <div class="text-6xl mb-2">🔥</div>
+                            <h3 class="text-3xl font-black italic mb-2">RETO ACTIVO</h3>
+                            <div class="text-5xl font-bold mb-2">${streak}</div>
+                            <div class="text-lg font-medium opacity-90">DÍAS DE RACHA</div>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <div class="share-stat rounded-2xl p-4 mb-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold">Mi nivel:</span>
+                                    <span class="text-2xl font-black">${level}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="text-center font-bold text-lg mb-3">"¿Quién me supera?"</p>
+                            
+                            <div class="flex justify-center gap-2 flex-wrap">
+                                <span class="px-3 py-1 bg-black/20 rounded-full text-xs font-bold">#Reto</span>
+                                <span class="px-3 py-1 bg-black/20 rounded-full text-xs font-bold">#Racha${streak}</span>
+                                <span class="px-3 py-1 bg-black/20 rounded-full text-xs font-bold">#Nivel${level}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-30"></div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        async function downloadCard() {
+            const card = document.getElementById('captureCard');
+            if (!card) return;
+            
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 2,
+                    backgroundColor: null,
+                    logging: false
+                });
+                
+                const link = document.createElement('a');
+                link.download = `mi-progreso-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                
+                showToast('✅ Descargado', 'Tu tarjeta está lista para compartir');
+            } catch (err) {
+                showToast('❌ Error', 'No se pudo generar la imagen');
+            }
+        }
+
+        function shareToTwitter() {
+            const text = generateShareText();
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareToInstagram() {
+            showToast('📸 Instagram', 'Descarga la imagen y súbela a tu historia');
+            downloadCard();
+        }
+
+        function shareToWhatsApp() {
+            const text = generateShareText();
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function copyShareText() {
+            const text = generateShareText();
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋 Copiado', 'Texto copiado al portapapeles');
+            });
+        }
+
+        function generateShareText() {
+            const streak = document.getElementById('totalStreakDisplay').textContent;
+            const level = document.getElementById('userLevel').textContent;
+            const progress = document.getElementById('generalProgress').textContent;
+            
+            const messages = [
+                `🔥 ${streak} de racha en mis hábitos | ${level} | ${progress} de eficiencia. ¿Tú cuántos llevas? 👀`,
+                `Nivel ${level} desbloqueado 📈 ${progress} de cumplimiento este mes. La consistencia es clave 🔑`,
+                `Llevo ${streak} sin fallar. Alguien que me supere? 😏 #Hábitos #Productividad`
+            ];
+            
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        // Utility Functions
+        function addNewHabit() {
+            document.getElementById('addHabitModal').classList.remove('hidden');
+            document.getElementById('addHabitModal').classList.add('flex');
+            selectedCategory = null;
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-purple-500', 'bg-purple-50', 'dark:bg-purple-900/20');
+                if (btn.dataset.cat === cat) {
+                    btn.classList.add('ring-2', 'ring-purple-500', 'bg-purple-50', 'dark:bg-purple-900/20');
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('addHabitModal').classList.add('hidden');
+            document.getElementById('addHabitModal').classList.remove('flex');
+            document.getElementById('newHabitInput').value = '';
+            document.getElementById('reminderTime').value = '';
+            selectedCategory = null;
+        }
+
+        function saveNewHabit() {
+            const name = document.getElementById('newHabitInput').value.trim();
+            const reminder = document.getElementById('reminderTime').value;
+            const calendar = document.getElementById('calendarSelect').value;
+            
+            if (name && selectedCategory) {
+                habits.push({
+                    name,
+                    category: selectedCategory,
+                    reminder: reminder || null,
+                    calendar: calendar || null,
+                    days: {},
+                    createdAt: new Date().toISOString()
+                });
+                
+                saveData();
+                renderTable();
+                updateStats();
+                updateCharts();
+                generateHeatmap();
+                closeModal();
+                showToast('✅ Hábito creado', `"${name}" añadido correctamente`);
+            }
+        }
+
+        function deleteHabit(index) {
+            if (confirm('¿Eliminar este hábito?')) {
+                habits.splice(index, 1);
+                saveData();
+                renderTable();
+                updateStats();
+                updateCharts();
+                generateHeatmap();
+            }
+        }
+
+        function completeAllDays(index) {
+            const daysInMonth = getDaysInMonth();
+            if (!habits[index].days) habits[index].days = {};
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${d}`;
+                habits[index].days[key] = true;
+            }
+            
+            saveData();
+            renderTable();
+            updateStats();
+            updateCharts();
+            generateHeatmap();
+            createConfetti();
+        }
+
+        function toggleAllDays() {
+            const daysInMonth = getDaysInMonth();
+            habits.forEach(h => {
+                if (!h.days) h.days = {};
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${d}`;
+                    h.days[key] = true;
+                }
+            });
+            
+            saveData();
+            renderTable();
+            updateStats();
+            updateCharts();
+            generateHeatmap();
+            createConfetti();
+        }
+
+        function filterByCategory(cat) {
+            currentFilter = cat;
+            renderTable();
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            updateDateDisplay();
+            renderTable();
+            updateStats();
+            updateCharts();
+            generateHeatmap();
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.top = '-10px';
+                conf.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                conf.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                conf.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 5000);
+            }
+        }
+
+        function showToast(title, message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast glass-panel p-4 rounded-xl shadow-lg border-l-4 border-purple-500 flex items-center gap-3 max-w-sm';
+            toast.innerHTML = `
+                <div class="flex-1">
+                    <h4 class="font-bold text-[var(--text-primary)] text-sm">${title}</h4>
+                    <p class="text-xs text-[var(--text-secondary)]">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function checkReminders() {
+            const now = new Date();
+            const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            habits.forEach(habit => {
+                if (habit.reminder === time) {
+                    const today = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+                    if (!habit.days || !habit.days[today]) {
+                        showToast('⏰ Recordatorio', `Es hora de: ${habit.name}`);
+                    }
+                }
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem('habitTrackerPro_data', JSON.stringify(habits));
+        }
+
+        function exportData() {
+            const data = { habits, exportDate: new Date().toISOString(), stats: { xp: calculateXP(), level: getLevel(calculateXP()) }};
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `habit-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.habits) {
+                            habits = data.habits;
+                            saveData();
+                            renderTable();
+                            updateStats();
+                            updateCharts();
+                            generateHeatmap();
+                            showToast('✅ Importado', `${habits.length} hábitos cargados`);
+                        }
+                    } catch (err) {
+                        alert('Error al importar');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeCalendarModal();
+                closeShareModal();
+            }
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                addNewHabit();
+            }
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                showShareModal();
+            }
+        });
+    </script>
+</body>
+</html>
